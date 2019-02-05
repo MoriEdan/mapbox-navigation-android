@@ -11,6 +11,7 @@ import com.mapbox.geojson.Point;
 import com.mapbox.navigator.BannerInstruction;
 import com.mapbox.navigator.NavigationStatus;
 import com.mapbox.navigator.RouteState;
+import com.mapbox.navigator.TrackedProgress;
 import com.mapbox.navigator.VoiceInstruction;
 import com.mapbox.services.android.navigation.v5.routeprogress.CurrentLegAnnotation;
 import com.mapbox.services.android.navigation.v5.routeprogress.RouteProgress;
@@ -106,6 +107,7 @@ class NavigationRouteProcessor {
       .inTunnel(status.getInTunnel())
       .currentState(currentRouteState);
 
+    addTotalTraveled(navigator, progressBuilder);
     addVoiceInstructions(status, progressBuilder);
     addBannerInstructions(status, navigator, progressBuilder);
     addUpcomingStepPoints(progressBuilder);
@@ -134,10 +136,22 @@ class NavigationRouteProcessor {
     currentIntersectionDistances = createDistancesToIntersections(currentStepPoints, currentIntersections);
   }
 
-  private void addUpcomingStepPoints(RouteProgress.Builder progressBuilder) {
-    if (upcomingStepPoints != null && !upcomingStepPoints.isEmpty()) {
-      progressBuilder.upcomingStepPoints(upcomingStepPoints);
+  private void addTotalTraveled(MapboxNavigator navigator, RouteProgress.Builder progressBuilder) {
+    List<TrackedProgress> history = navigator.retrieveTrackedProgress();
+    double totalDistanceTraveled = 0d;
+    float totalDurationTraveled = 0f;
+    for (TrackedProgress trackedProgress : history) {
+      if (trackedProgress.getOpen()) {
+        continue;
+      }
+      NavigationStatus initialStatus = trackedProgress.getInitialStatus();
+      NavigationStatus finalStatus = trackedProgress.getFinalStatus();
+      totalDistanceTraveled += finalStatus.getRemainingLegDistance() - initialStatus.getRemainingLegDistance();
+      totalDurationTraveled += finalStatus.getRemainingLegDuration() - initialStatus.getRemainingLegDuration();
     }
+
+    progressBuilder.totalDistanceTraveled(totalDistanceTraveled);
+    progressBuilder.totalDurationTraveled(totalDurationTraveled);
   }
 
   private void addVoiceInstructions(NavigationStatus status, RouteProgress.Builder progressBuilder) {
@@ -152,5 +166,11 @@ class NavigationRouteProcessor {
       bannerInstruction = navigator.retrieveBannerInstruction(FIRST_BANNER_INSTRUCTION);
     }
     progressBuilder.bannerInstruction(bannerInstruction);
+  }
+
+  private void addUpcomingStepPoints(RouteProgress.Builder progressBuilder) {
+    if (upcomingStepPoints != null && !upcomingStepPoints.isEmpty()) {
+      progressBuilder.upcomingStepPoints(upcomingStepPoints);
+    }
   }
 }

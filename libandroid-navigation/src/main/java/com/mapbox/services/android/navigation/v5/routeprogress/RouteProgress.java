@@ -78,6 +78,13 @@ public abstract class RouteProgress {
   }
 
   /**
+   * TODO
+   *
+   * @return
+   */
+  public abstract double totalDistanceTraveled();
+
+  /**
    * Provides the duration remaining in seconds till the user reaches the end of the route.
    *
    * @return {@code long} value representing the duration remaining till end of route, in unit
@@ -87,6 +94,14 @@ public abstract class RouteProgress {
   public double durationRemaining() {
     return (1 - fractionTraveled()) * directionsRoute().duration();
   }
+
+
+  /**
+   * TODO
+   *
+   * @return
+   */
+  public abstract float totalDurationTraveled();
 
   /**
    * Get the fraction traveled along the current route, this is a float value between 0 and 1 and
@@ -101,6 +116,21 @@ public abstract class RouteProgress {
 
     if (directionsRoute().distance() > 0) {
       fractionRemaining = (float) (distanceTraveled() / directionsRoute().distance());
+    }
+    return fractionRemaining;
+  }
+
+
+  /**
+   * TODO
+   *
+   * @return
+   */
+  public float totalFractionTraveled() {
+    float fractionRemaining = 1;
+
+    if (directionsRoute().distance() > 0) {
+      fractionRemaining = (float) ((distanceTraveled() + totalDistanceTraveled()) / (directionsRoute().distance() + totalDistanceTraveled()));
     }
     return fractionRemaining;
   }
@@ -213,6 +243,10 @@ public abstract class RouteProgress {
   public abstract static class Builder {
 
     public abstract Builder directionsRoute(DirectionsRoute directionsRoute);
+
+    public abstract Builder totalDistanceTraveled(double totalDistanceTraveled);
+
+    public abstract Builder totalDurationTraveled(float totalDurationTraveled);
 
     abstract DirectionsRoute directionsRoute();
 
