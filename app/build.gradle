@@ -89,6 +89,11 @@ dependencies {
   implementation dependenciesList.mapboxMapSdk
   implementation dependenciesList.mapboxSearchSdk
 
+  // TODO remove when dependency is released upstream
+  implementation("com.mapbox.mapboxsdk:mapbox-sdk-services:4.4.0-SNAPSHOT") {
+    force = true
+  }
+
   // Support libraries
   implementation dependenciesList.supportAppcompatV7
   implementation dependenciesList.supportDesign

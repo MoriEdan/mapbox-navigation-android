@@ -47,6 +47,9 @@ final class NavigationMetricsWrapper {
   static void init(Context context, String accessToken, String userAgent) {
     mapboxTelemetry = new MapboxTelemetry(context, accessToken, userAgent);
     mapboxTelemetry.enable();
+
+    // TODO disable after testing
+    mapboxTelemetry.updateDebugLoggingEnabled(true);
   }
 
   static void toggleLogging(boolean isDebugLoggingEnabled) {
@@ -371,7 +374,7 @@ final class NavigationMetricsWrapper {
     mapboxTelemetry.push(feedbackEvent);
   }
 
-  static void routeRetrievalEvent(long elapsedTime, String routeUuid, String sessionId) {
+  static void routeRetrievalEvent(double elapsedTime, String routeUuid, String sessionId) {
     push(new RouteRetrievalEvent(elapsedTime, routeUuid, sessionId));
   }
 
