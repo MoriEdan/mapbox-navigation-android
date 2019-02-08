@@ -2,6 +2,7 @@ package com.mapbox.services.android.navigation.v5.navigation;
 
 import android.content.Context;
 import android.support.annotation.FloatRange;
+import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -495,6 +496,22 @@ public final class NavigationRoute {
       return this;
     }
 
+
+    /**
+     * Optionally, set which input coordinates should be treated as separate legs.
+     * <p>
+     * Most useful in combination with <tt>steps=true</tt> and requests based on traces
+     * with high sample rates. Can be an index corresponding to any of the input coordinates,
+     * but must contain the first ( 0 ) and last coordinates' index separated by <tt>;</tt>.
+     *
+     * @param indices integer array of coordinate indices to be used as separate legs
+     * @return this builder for chaining options together
+     */
+    public Builder addSeparatesLegs(@Nullable @IntRange(from = 0) Integer... indices) {
+      directionsBuilder.addSeparatesLegs(indices);
+      return this;
+    }
+
     /**
      * Custom names for waypoints used for the arrival instruction,
      * each separated by <tt>;</tt>. Values can be any string and total number of all characters cannot
@@ -585,6 +602,12 @@ public final class NavigationRoute {
         directionsBuilder.addApproaches(approaches);
       }
 
+      String separatesLegs = options.separatesLegs();
+      if (!TextUtils.isEmpty(separatesLegs)) {
+        Integer[] splitSeparatesLegsIndices = parseSeparatesLegsIndices(separatesLegs);
+        directionsBuilder.addSeparatesLegs(splitSeparatesLegsIndices);
+      }
+
       if (!TextUtils.isEmpty(options.waypointNames())) {
         String[] waypointNames = options.waypointNames().split(SEMICOLON);
         directionsBuilder.addWaypointNames(waypointNames);
@@ -592,8 +615,8 @@ public final class NavigationRoute {
 
       String waypointTargets = options.waypointTargets();
       if (!TextUtils.isEmpty(waypointTargets)) {
-        Point[] splittedWaypointTargets = parseWaypointTargets(waypointTargets);
-        directionsBuilder.addWaypointTargets(splittedWaypointTargets);
+        Point[] splitWaypointTargets = parseWaypointTargets(waypointTargets);
+        directionsBuilder.addWaypointTargets(splitWaypointTargets);
       }
 
       return this;
@@ -620,11 +643,23 @@ public final class NavigationRoute {
     }
 
     @NonNull
-    private Point[] parseWaypointTargets(String waypointTargets) {
-      String[] splittedWaypointTargets = waypointTargets.split(SEMICOLON);
-      Point[] waypoints = new Point[splittedWaypointTargets.length];
+    private Integer[] parseSeparatesLegsIndices(String separatesLegsIndices) {
+      String[] splitSeparatesLegsIndices = separatesLegsIndices.split(SEMICOLON);
+      Integer[] indices = new Integer[splitSeparatesLegsIndices.length];
       int index = 0;
-      for (String waypointTarget : splittedWaypointTargets) {
+      for (String separateLegIndex : splitSeparatesLegsIndices) {
+        int parsedIndex = Integer.valueOf(separateLegIndex);
+        indices[index++] = parsedIndex;
+      }
+      return indices;
+    }
+
+    @NonNull
+    private Point[] parseWaypointTargets(String waypointTargets) {
+      String[] splitWaypointTargets = waypointTargets.split(SEMICOLON);
+      Point[] waypoints = new Point[splitWaypointTargets.length];
+      int index = 0;
+      for (String waypointTarget : splitWaypointTargets) {
         String[] point = waypointTarget.split(COMMA);
         if (waypointTarget.isEmpty()) {
           waypoints[index++] = null;

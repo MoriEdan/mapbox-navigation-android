@@ -88,6 +88,10 @@ dependencies {
   implementation project(':libandroid-navigation-ui')
   implementation dependenciesList.mapboxMapSdk
   implementation dependenciesList.mapboxSearchSdk
+  // TODO remove when dependency is released upstream
+  implementation(dependenciesList.mapboxSdkServices) {
+    force = true
+  }
 
   // Support libraries
   implementation dependenciesList.supportAppcompatV7
